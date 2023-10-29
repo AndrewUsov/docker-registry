@@ -1,4 +1,4 @@
-- change `yoursitename` to your domain name
+- change `yoursitename` to your domain name and `le` to your traefik certificate resolver
 - volumes folder will contain all volumes
 - auth folder should contain `htpasswd` file with auth
     you can make this file by typing in shell: `htpasswd -Bbn testuser password > auth/htpasswd`
