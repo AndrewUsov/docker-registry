@@ -1,0 +1,75 @@
+version: '3.6'
+services:
+
+  # Registry itself
+  registry:
+    image: 'registry:2.8.0'
+    container_name: registry
+    restart: always
+    ports:
+      - '5000:5000'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.registry.loadbalancer.server.port=5000"
+      # Should be off with traefik or Internal Server Error
+      # - "traefik.http.services.registry.loadbalancer.server.scheme=https"
+      - "traefik.http.routers.registry.entrypoints=https"
+      - "traefik.http.routers.registry.tls.certresolver=le"
+      - "traefik.http.routers.registry.tls=true"
+      - "traefik.http.routers.registry.rule=Host(`registry.yoursitename.com`)"    
+    environment:
+      # TLS
+      # - REGISTRY_HTTP_ADDR=0.0.0.0:443
+      # - REGISTRY_HTTP_TLS_CERTIFICATE=/etc/docker-registry/certs/domain.crt
+      # - REGISTRY_HTTP_TLS_KEY=/etc/docker-registry/certs/domain.key
+
+      # Just Auth
+      - REGISTRY_AUTH=htpasswd   
+      - REGISTRY_AUTH_HTPASSWD_PATH=/etc/docker-registry/auth/htpasswd
+      - REGISTRY_AUTH_HTPASSWD_REALM=registry-realm
+
+      - REGISTRY_HTTP_SECRET=asdasd
+
+      # Debug
+      # - REGISTRY_LOG_LEVEL=debug
+
+      # Data
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/data
+    volumes:
+      # Auth creds
+      - ./auth:/etc/docker-registry/auth
+      # Certificates
+      # - ./certs:/etc/docker-registry/certs
+      # Images
+      - ./volumes:/data
+    
+    networks:
+      - web
+
+  # Small UI
+  registry-frontend:
+    image: joxit/docker-registry-ui:latest
+    container_name: registry-frontend
+    ports:
+      - 8787:80
+    environment:
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE=Docker Registry UI
+      - DELETE_IMAGES=true
+      - SHOW_CONTENT_DIGEST=true
+      - NGINX_PROXY_PASS_URL=http://registry:5000
+      - SHOW_CATALOG_NB_TAGS=true
+      - CATALOG_MIN_BRANCHES=1
+      - CATALOG_MAX_BRANCHES=1
+      - TAGLIST_PAGE_SIZE=100
+      - REGISTRY_SECURED=true
+      - CATALOG_ELEMENTS_LIMIT=1000
+    networks:
+      - web
+
+
+
+networks:
+  web:
+    name: superweb
+    external: true
