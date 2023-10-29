@@ -1,3 +1,4 @@
+- change `yoursitename` to your domain name
 - volumes folder will contain all volumes
 - auth folder should contain `htpasswd` file with auth
     you can make this file by typing in shell: `htpasswd -Bbn testuser password > auth/htpasswd`
